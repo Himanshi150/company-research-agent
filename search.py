@@ -4,7 +4,10 @@ import os
 from typing import Any, Dict, List
 from urllib.parse import urlparse
 
+from dotenv import load_dotenv
 from tavily import TavilyClient
+
+load_dotenv()
 
 
 CATEGORIES = {
@@ -83,8 +86,8 @@ def research_company(company_name: str, api_key: str | None = None) -> List[Dict
         try:
             response = client.search(
                 query=query,
-                search_depth="advanced",
-                max_results=8,
+                search_depth="basic",
+                max_results=5,
                 include_answer=False,
                 include_raw_content=False,
             )
