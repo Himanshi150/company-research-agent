@@ -1,0 +1,21 @@
+# Environment
+.env
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# IDE and OS
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Streamlit and test artifacts
+.streamlit/secrets.toml
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated PDFs
+*.pdf
