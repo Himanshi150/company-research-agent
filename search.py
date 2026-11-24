@@ -90,6 +90,7 @@ def research_company(company_name: str, api_key: str | None = None) -> List[Dict
                 max_results=5,
                 include_answer=False,
                 include_raw_content=False,
+                timeout=20,
             )
             for item in response.get("results", []) or []:
                 item = dict(item)

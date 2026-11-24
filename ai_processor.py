@@ -113,7 +113,10 @@ def get_gemini_client(
             "GEMINI_API_KEY is missing. Add it to .env or Streamlit secrets."
         )
 
-    return genai.Client(api_key=key)
+    return genai.Client(
+        api_key=key,
+        http_options=types.HttpOptions(timeout=45_000),
+    )
 
 
 def format_evidence(

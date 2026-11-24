@@ -1,6 +1,8 @@
 """Streamlit interface for the Company Research Agent."""
 
 import os
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
+
 import streamlit as st
 from dotenv import load_dotenv
 
@@ -54,10 +56,24 @@ if search_clicked:
         try:
             with st.status("Researching public sources and preparing report...", expanded=False) as status:
                 st.write("Searching company overview and public sources...")
-                results = research_company(company_name)
+                executor = ThreadPoolExecutor(max_workers=1)
+                future = executor.submit(research_company, company_name)
+                try:
+                    results = future.result(timeout=110)
+                except TimeoutError:
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    raise RuntimeError("Research timed out while searching public sources. Please try again.")
+
                 st.write(f"Found {len(results)} relevant unique sources.")
                 st.write("Using Gemini to synthesize evidence...")
-                report = generate_report(company_name, results)
+                executor = ThreadPoolExecutor(max_workers=1)
+                future = executor.submit(generate_report, company_name, results)
+                try:
+                    report = future.result(timeout=120)
+                except TimeoutError:
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    raise RuntimeError("Report generation timed out. Please try again in a minute.")
+
                 status.update(label="Research complete", state="complete")
 
             st.session_state["report"] = report
@@ -67,8 +83,9 @@ if search_clicked:
             st.info("Add TAVILY_API_KEY and GEMINI_API_KEY to your local .env file or Streamlit Cloud secrets.")
         except RuntimeError as exc:
             st.error(str(exc))
-        except Exception:
-            st.error("An unexpected error occurred while generating the report. Please verify API keys and try again.")
+        except Exception as exc:
+            st.error(f"Report generation failed: {exc}")
+            st.info("Verify your API keys and network connection, then try again.")
 
 if "report" in st.session_state:
     report = st.session_state["report"]
